@@ -14,7 +14,7 @@
 | 구분 | 기술 |
 |------|------|
 | 프레임워크 | LangChain, Python |
-| LLM | GPT-4 |
+| LLM | GPT-4o |
 | 벡터DB | FAISS, ChromaDB |
 | 저장소 | JSON, Markdown |
 
