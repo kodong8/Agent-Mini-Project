@@ -15,7 +15,7 @@
 |------|------|
 | 프레임워크 | LangChain, Python |
 | LLM | GPT-4 |
-| 검색 | FAISS |
+| 벡터DB | FAISS, ChromaDB |
 | 저장소 | JSON, Markdown |
 
 ## 에이전트 구성
@@ -68,11 +68,8 @@
 - 보고서 상태 관리
 
 ## 아키텍처
-```
-[ServiceAnalyzerAgent] → [RiskAssessorAgent] → [RecommenderAgent] → [ReportGeneratorAgent]
-         ↑                        ↑                      ↑                      ↑
-         └────────────────────────┴──────────────────────┴──────────────────────┘
-                                    [OrchestratorAgent]
+   ```
+![Agent 다이어그램](https://www.mermaidchart.com/play?utm_source=mermaid_live_editor&utm_medium=toggle#pako:eNptU2tL21AY_iuHiKCQUtr0y-oQ3Mr8NCar-5RKSJNTG8xtJ2ldGYOORvCyMccUZaRSNhU2HNTLxIG_KDn5DzsmOTFJm0_Jm-d5b8_zvmckQ4ZMlWmpxqbUFpENVmsNHZBndhbgo308vMEjJ9i9A_7Wnf_Njf4tlXjsuP4_B--eAnyy5Y_OMuC1GFbmvbsxPu0D76qPBztTMRyP3VP__AIEX3a8cX8qpsL71zfe9YgUBXgwxM7lNNirN6t8g8F_Xfxjy7sae9f3_sX93EsRbcjGpl5cqb2YbzAEm8xXt0UbxoOBOfzzHn8_AMGh8_AZfHXxnjsfYeslfnLgkP20iYqLFkRdRYKWoOhmx45DKpRsKAsSUmyIFDGMhv-FrqgqMuHKa3Hj9TKfW9RjbsoX3nYg6oUhBG2kwC5JbpEaiqFbcUkRSW0Bak0oy4q-bqXBoipIhmaq0IZJVY7Prf6xqqiLas9SLAFBq6PaNBVJoUGd9J4UTYAmIumj2VVVe-CZBPNYrMJPapjaYEfTRNQTbLGpRhFdRIjU6cLskAiaBrIFLRY1jJlyS2j2bJhBrEMdIrrkRHH_85i4JnDGIBju--cOtTMoFACxDpW4GKsRKc2GqpwPGwyBLRJXU1NErKz6LJiQPsWjdxExo7UHh3_8378Avj3At8SGr5eWWfC8TdYp1p7NUy5HnRIxJy2QAtLDiodyneDoGODtYzJR0bv99KDB4TbVYG55ZbVQMZJCFWqOiJ03AgtyLkjx6LFGzLzaMZAcKXUEHSWjKAsSOdOMREFv_DFz-3h4HN8xHvXxyVnRG1_ivVFO2MHHYODGiDhtvZQVYyqmnNvlNAyXnXsqJtmOpIqWVYMtYIU9txRVrc60nrRYy0bGBqzOcBwXvxc2FdluV0vmu4UUl_TN1stsnWPJAsMkC8yH_ykVYk8)`
 ```
 
 ## 디렉토리 구조
