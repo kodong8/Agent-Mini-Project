@@ -25,6 +25,18 @@
 4. 보고서 생성 에이전트: 분석 결과를 받아 Jinja2 템플릿에 삽입하여 최종 Markdown 보고서를 만듭니다. 보고서는 요약 표와 항목별 권고안을 포함하며, 필요 시 PDF로 변환됩니다.
 
 ## Agent별 State
+### 1안
+**코드**
+`Class AgentState(TypeDict):`
+`    messages: Annotated[Sequence[BaseMessage], add_messages]`
+
+Agent State: `message`만 정의한 후, langgraph의 `add_message` 메서드와 `langgraph.prebuilt` 라이브러리의 `ToolNode`를 활용하여 툴콜링을 담당하는 방식으로 설정
+
+**헷갈리는 점** 1안처럼 State를 정의한 이유는 Langgraph 노드가 Agent일 경우, 툴콜링 판단을 Agent가 하는 것이 가능하기 때문에, state를 디테일하게 나누지 않아도 될것 같다는 생각이 들었습니다.
+하지만 이렇게 state를 정의할 경우, 에이전트 내 workflow는 동작 원리가 이해가 가지만 Agent간 어떤 흐름을 가지게 되는지 헷갈려서 **State를 이렇게 정의해도 될 지 질문드리고 싶습니다**
+
+
+### 2안
 **서비스 입력 에이전트**
 | 키                   | 설명                                               |
 | ------------------- | ------------------------------------------------ |
