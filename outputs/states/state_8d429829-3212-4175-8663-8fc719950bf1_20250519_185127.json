@@ -1,0 +1,14 @@
+{
+  "ai_service": "ChatGPT",
+  "criteria": "EU AI Act",
+  "state_score": [
+    0,
+    0,
+    0
+  ],
+  "workflow_status": "processing",
+  "report_path": null,
+  "workflow_id": "8d429829-3212-4175-8663-8fc719950bf1",
+  "created_at": "2025-05-19T18:51:27.124029",
+  "updated_at": "2025-05-19T18:51:27.124029"
+}

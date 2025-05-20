@@ -4,9 +4,9 @@
 이 프로젝트는 AI 서비스의 윤리적 리스크를 자동으로 진단하고 평가하는 시스템입니다. 주요 AI 윤리 프레임워크(EU AI Act, UNESCO AI Ethics, OECD AI Principles)를 기반으로 서비스를 분석하고, 잠재적인 윤리적 문제점을 식별하며, 개선 방안을 제시합니다.
 
 ## 주요 기능
-- 다중 AI 서비스 동시 분석
+- AI 서비스 윤리적 리스크 분석
 - 주요 윤리 프레임워크 기반 평가
-- 자동화된 리스크 평가 및 점수 산정
+- 자동화된 리스크 평가 및 보고서 생성
 - 상세한 분석 보고서 자동 생성
 - 개선을 위한 구체적인 권고사항 제시
 
@@ -19,87 +19,161 @@
 | 저장소 | JSON, Markdown |
 
 ## 에이전트 구성
-1. 서비스 입력 에이전트: 사용자로부터 입력받은 AI 서비스(JSON)와 선택된 윤리 기준을 수집하고 초기 상태로 설정합니다.
-2. 기준 검색 에이전트: 선택된 윤리 기준(예: EU AI Act, UNESCO, OECD)의 원문이 저장된 ChromaDB에서, 각 서비스 설명에 맞는 평가 항목(조항)을 벡터 검색으로 추출합니다.
-3. 윤리 평가 에이전트: GPT-4o를 사용해 추출된 평가 항목을 기반으로 각 서비스의 위험 수준을 분석하고, 서비스-항목 쌍별로 리스크를 요약합니다.
-4. 보고서 생성 에이전트: 분석 결과를 받아 Jinja2 템플릿에 삽입하여 최종 Markdown 보고서를 만듭니다. 보고서는 요약 표와 항목별 권고안을 포함하며, 필요 시 PDF로 변환됩니다.
+1. 서비스 입력 에이전트: 사용자로부터 입력받은 AI 서비스를 ToolNode를 활용해 웹 검색 툴콜링 수행. Serpapi Web search tool 사용해 정보 수집
+2. 기준 검색 에이전트: 선택된 윤리 기준과 AI 서비스, 서비스 입력 에이전트 리턴 메시지를 입력받아 ChromaDB에서 관련 윤리 기준 검색
+3. 윤리 평가 에이전트: 서비스 입력 에이전트와 기준 검색 에이전트 정보를 바탕으로 GPT-4o 사용해 윤리 리스크 분석
+4. 보고서 생성 에이전트: 수집된 정보를 바탕으로 보고서 형식에 따라 txt 파일 작성
 
-## Agent별 State
-### 1안
-**코드**
-`Class AgentState(TypeDict):`
-`    messages: Annotated[Sequence[BaseMessage], add_messages]`
+## State
+**AI_service**: 보고서의 대상이 될 AI 서비스 이름. 이용자가 입력한 String 형태
+**service_info**: 서비스 입력 에이전트가 생성한 AI_service의 설명. message 형태
+**criteria**: 선택한 윤리 기준 (예: EU AI Act). 이용자가 입력한 string 형태
+**criteria_info**: 기준 검색 에이전트가 생성한 관련 윤리 기준에 대한 내용 message 형태
+**risk_message**: 윤리 평가 에이전트의 Output 값. service_info와 ciriteria_info 정보를 활용해서 AI_service에서 발생할 수 있는 윤리적 리스크에 대한 내용과 생성된 권고 사항. message 형태
+**state_score**: 워크플로우 상태 추적을 할 수 있는 state임. 각 state의 대한 정보에 질을 평가한 점수이며 list 형태로 표시. 만약, 답변의 퀄리티가 낮아 점수가 낮다면 해당 노드로 돌아가서 작업을 다시 수행함. 
 
-Agent State: `message`만 정의한 후, langgraph의 `add_message` 메서드와 `langgraph.prebuilt` 라이브러리의 `ToolNode`를 활용하여 툴콜링을 담당하는 방식으로 설정
+## 설치 방법
 
-**헷갈리는 점** 1안처럼 State를 정의한 이유는 Langgraph 노드가 Agent일 경우, 툴콜링 판단을 Agent가 하는 것이 가능하기 때문에, state를 디테일하게 나누지 않아도 될것 같다는 생각이 들었습니다.
-하지만 이렇게 state를 정의할 경우, 에이전트 내 workflow는 동작 원리가 이해가 가지만 Agent간 어떤 흐름을 가지게 되는지 헷갈려서 **State를 이렇게 정의해도 될 지 질문드리고 싶습니다**
+1. 레포지토리 클론
+```bash
+git clone <repository_url>
+cd ai_agent
+```
 
+2. 필요한 패키지 설치
+```bash
+pip install -r requirements.txt
+```
 
-### 2안
-**서비스 입력 에이전트**
-| 키                   | 설명                                               |
-| ------------------- | ------------------------------------------------ |
-| `services_input`    | 사용자로부터 입력받은 AI 서비스 목록 및 세부 정보(JSON)              |
-| `selected_criteria` | 사용자가 선택한 윤리 기준 목록 (예: `["EU AI Act", "UNESCO"]`) |
-| `input_validated`   | 입력 데이터 검증 여부 (필수 필드 존재 여부, JSON 파싱 등)            |
+3. 환경 변수 설정
+```bash
+cp .env.example .env
+```
+`.env` 파일을 편집하여 필요한 API 키와 설정 입력
 
-**기준 검색 에이전트**
+## 사용 방법
 
-| 키                    | 설명                                         |
-| -------------------- | ------------------------------------------ |
-| `criteria_query`     | 각 서비스 설명에 기반해 생성된 검색 쿼리(문장 or 키워드)         |
-| `retrieved_sections` | ChromaDB에서 반환된 관련 평가 항목(윤리 기준 텍스트 조각)의 리스트 |
-| `search_embeddings`  | 검색용 쿼리 문장에 대한 임베딩 결과 (Vector)              |
-| `retrieval_complete` | 기준 검색 완료 여부 (Boolean)                      |
+### 1. 시스템 실행
 
-**윤리 평가 에이전트**
-| 키                  | 설명                                       |
-| ------------------ | ---------------------------------------- |
-| `analysis_results` | 각 서비스-평가항목 쌍에 대한 위험 수준(높음/중간/낮음) 및 간략 설명 |
-| `recommendations`  | 각 서비스-평가항목에 대한 서술형 개선 권고안 (자연어 텍스트)      |
-| `analysis_prompt`  | 내부적으로 사용된 분석용 프롬프트 템플릿 (디버깅용)            |
-| `llm_response`     | GPT-4o로부터 받은 원본 응답 내용 (RAW)              |
+```bash
+python main.py --service "분석할 AI 서비스명" --criteria "EU AI Act"
+```
 
-**보고서 생성 에이전트**
-| 키                    | 설명                                   |
-| -------------------- | ------------------------------------ |
-| `summary_table`      | 보고서에 포함될 요약 표 데이터 (서비스, 평가항목, 위험 수준) |
-| `narrative_sections` | 보고서에 포함될 항목별 권고안 텍스트 (마크다운 형식의 단락)   |
-| `report_markdown`    | 최종 결합된 전체 보고서 내용 (Markdown 포맷)       |
-| `pdf_bytes`          | 보고서의 PDF 변환 결과 (바이트 스트림)             |
-| `report_generated`   | 보고서 생성 완료 여부 (Boolean)               |
+옵션:
+- `--service` 또는 `-s`: 분석할 AI 서비스 이름 (필수)
+- `--criteria` 또는 `-c`: 적용할 윤리 기준 (기본값: "EU AI Act")
+  - 가능한 선택지: "EU AI Act", "UNESCO AI Ethics", "OECD AI Principles"
 
+### 2. 결과 확인
 
+분석이 완료되면 보고서가 `ai_agent/outputs/reports/` 디렉토리에 생성됩니다.
+상태 정보는 `ai_agent/outputs/states/` 디렉토리에 JSON 형식으로 저장됩니다.
 
-## 상태 관리
-- 워크플로우 상태 추적
-- 서비스 데이터 관리
-- 리스크 점수 기록
-- 권고사항 저장
-- 보고서 상태 관리
+### 3. 워크플로우 시각화
 
-## 아키텍처
+```bash
+python visualize_workflow.py
+```
 
-![AI 윤리성 리스크 진단 시스템 아키텍처](agent_diagram.png)
+위 명령어를 실행하면 `ai_agent/outputs/ethics_workflow_diagram.html` 파일이 생성됩니다.
+이 파일은 웹 브라우저에서 열어서 전체 워크플로우의 시각적 다이어그램을 확인할 수 있습니다.
 
-## 디렉토리 구조
+## 프로젝트 구조
 ```
 ai_agent/
 ├── src/
 │   ├── agents/           # 에이전트 구현
-│   ├── core/            # 핵심 기능
-│   ├── prompts/         # 프롬프트 템플릿
-│   ├── tools/           # 유틸리티 도구
-│   └── utils/           # 유틸리티 함수
+│   ├── core/             # 핵심 기능 (workflow, state 등)
+│   ├── prompts/          # 프롬프트 템플릿
+│   ├── tools/            # 에이전트 도구(websearch, retriever)
+│   └── utils/            # 유틸리티 함수
 ├── outputs/
-│   ├── reports/         # 생성된 보고서
-│   └── states/          # 시스템 상태
-├── tests/               # 테스트 코드
-├── config/              # 설정 파일
-├── main.py             # 메인 실행 스크립트
-└── requirements.txt     # 의존성 패키지
+│   ├── reports/          # 생성된 보고서
+│   └── states/           # 시스템 상태
+├── tests/                # 테스트 코드
+├── main.py               # 메인 실행 스크립트
+├── visualize_workflow.py # 워크플로우 시각화 스크립트
+└── requirements.txt      # 의존성 패키지
 ```
 
 ## 기여자
 - 고동현: Prompt Engineering, Agent Design
+
+# Python 관련
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상 환경
+venv/
+env/
+ENV/
+.env
+
+# IDE 관련
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# 로그 및 출력 파일
+ai_agent/logs/
+ai_agent/outputs/
+logs/
+*.log
+*.txt
+*.pdf
+
+# 벡터 데이터베이스 (필요시 주석 해제)
+# ./data/vectorstore/
+
+# 모델 관련 파일
+*.bin
+*.pt
+*.pth
+*.h5
+*.onnx
+*.tflite
+
+# API 키 및 민감한 정보
+.env
+secrets.json
+credentials.json
+
+# 임시 파일
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.coverage.*
+coverage.xml
+*.cover
+.cache/
+nosetests.xml
+coverage.xml
+
+# 시스템 파일
+.DS_Store
+Thumbs.db

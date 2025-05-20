@@ -1,0 +1,14 @@
+{
+  "ai_service": "에이닷 비즈 HR(A.Dot Biz HR)",
+  "criteria": "EU AI Act",
+  "state_score": [
+    0,
+    0,
+    0
+  ],
+  "workflow_status": "processing",
+  "report_path": null,
+  "workflow_id": "4f9d6e15-5d8b-48c9-b47b-de0c1737b199",
+  "created_at": "2025-05-19T18:45:40.808279",
+  "updated_at": "2025-05-19T18:45:40.808279"
+}

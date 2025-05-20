@@ -1,0 +1,78 @@
+# Python 관련
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상 환경
+venv/
+env/
+ENV/
+.env
+
+# IDE 관련
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# 로그 및 출력 파일
+ai_agent/logs/
+ai_agent/outputs/
+logs/
+*.log
+*.txt
+*.pdf
+
+# 벡터 데이터베이스 (필요시 주석 해제)
+# ./data/vectorstore/
+
+# 모델 관련 파일
+*.bin
+*.pt
+*.pth
+*.h5
+*.onnx
+*.tflite
+
+# API 키 및 민감한 정보
+.env
+secrets.json
+credentials.json
+
+# 임시 파일
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.coverage.*
+coverage.xml
+*.cover
+.cache/
+nosetests.xml
+coverage.xml
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
